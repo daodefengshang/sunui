@@ -240,6 +240,7 @@
             this.dialogBtnCancel = null;
             this.dialogClose = null;
             this.json = null;
+            this.showInterval = null;
         }
 
         DialogNode.prototype.init = function (type, json) {
@@ -330,37 +331,50 @@
         };
 
         DialogNode.prototype.show = function () {
-            var that = this;
+            var that = this, dialogContainer = that.dialogContainer, interval = 0;
+            dialogContainer.style.opacity = '0.01';
+            dialogContainer.style.filter = 'Alpha(opacity = 1)';
             document.body.appendChild(that.dialogModal);
-            that.dialogBtnSure.onclick = function (e) {
-                var ev = e || window.event;
-                if(ev.stopPropagation) {ev.stopPropagation();} else {ev.cancelBubble = true;}
-                if(ev.preventDefault) {ev.preventDefault();} else {ev.returnValue = false;}
-                that.dialogModal.parentNode.removeChild(that.dialogModal);
-                if(typeof that.json.handler === 'function') {that.json.handler(true);}
-                sunui.messager.shift(that);
-                that.showNext();
-                return false;
-            };
-            that.dialogClose.onclick = function (e) {
-                var ev = e || window.event;
-                if(ev.stopPropagation) {ev.stopPropagation();} else {ev.cancelBubble = true;}
-                if(ev.preventDefault) {ev.preventDefault();} else {ev.returnValue = false;}
-                that.dialogModal.parentNode.removeChild(that.dialogModal);
-                if(typeof that.json.handler === 'function') {that.json.handler(false);}
-                sunui.messager.shift(that);
-                that.showNext();
-                return false;
-            };
-            if (that.dialogBtnCancel) {
-                that.dialogBtnCancel.onclick = that.dialogClose.onclick;
-            }
-            that.dialogModal.onselectstart = function (e) {
-                var ev = e || window.event;
-                if(ev.stopPropagation) {ev.stopPropagation();} else {ev.cancelBubble = true;}
-                if(ev.preventDefault) {ev.preventDefault();} else {ev.returnValue = false;}
-            };
-            that._moveListener();
+            that.showInterval = window.setInterval(function () {
+                interval += 10;
+                if (interval > 100) {
+                    interval = 100;
+                }
+                dialogContainer.style.opacity = '' + (interval / 100);
+                dialogContainer.style.filter = 'Alpha(opacity = ' + interval + ')';
+                if (interval >= 100) {
+                    window.clearInterval(that.showInterval);
+                    that.dialogBtnSure.onclick = function (e) {
+                        var ev = e || window.event;
+                        if(ev.stopPropagation) {ev.stopPropagation();} else {ev.cancelBubble = true;}
+                        if(ev.preventDefault) {ev.preventDefault();} else {ev.returnValue = false;}
+                        that.dialogModal.parentNode.removeChild(that.dialogModal);
+                        if(typeof that.json.handler === 'function') {that.json.handler(true);}
+                        sunui.messager.shift(that);
+                        that.showNext();
+                        return false;
+                    };
+                    that.dialogClose.onclick = function (e) {
+                        var ev = e || window.event;
+                        if(ev.stopPropagation) {ev.stopPropagation();} else {ev.cancelBubble = true;}
+                        if(ev.preventDefault) {ev.preventDefault();} else {ev.returnValue = false;}
+                        that.dialogModal.parentNode.removeChild(that.dialogModal);
+                        if(typeof that.json.handler === 'function') {that.json.handler(false);}
+                        sunui.messager.shift(that);
+                        that.showNext();
+                        return false;
+                    };
+                    if (that.dialogBtnCancel) {
+                        that.dialogBtnCancel.onclick = that.dialogClose.onclick;
+                    }
+                    that.dialogModal.onselectstart = function (e) {
+                        var ev = e || window.event;
+                        if(ev.stopPropagation) {ev.stopPropagation();} else {ev.cancelBubble = true;}
+                        if(ev.preventDefault) {ev.preventDefault();} else {ev.returnValue = false;}
+                    };
+                    that._moveListener();
+                }
+            }, 30);
         };
 
         DialogNode.prototype.showNext = function () {
