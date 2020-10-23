@@ -23,6 +23,9 @@ body {
     margin: 12px 0 0 0;
     border: 1px solid #E0E0FD;
     background: #FCFCFC;
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
     border-radius: 5px;
