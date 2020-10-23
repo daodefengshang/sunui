@@ -203,6 +203,119 @@
     }
 
     (function () {
+        var getToastContainer = (function () {
+            var i = false, baseEl = document.createElement('div');
+            baseEl.className = 'sun-toast-container';
+            return function () {
+                if (i) {
+                    return baseEl;
+                } else {
+                    i = true;
+                    document.body.appendChild(baseEl);
+                    return baseEl;
+                }
+            }
+        })();
+        sunui.toast = function(msg, level, delay) {
+            msg = msg || '';
+            level = level || 'warning';
+            if (level === 'warn') {level = 'warning';}
+            delay = (typeof delay === 'number' && delay >= 0 ? delay : 3000);
+            var toastNode = new ToastNode(msg, level, delay);
+            toastNode.init();
+            toastNode.show();
+        };
+
+        function ToastNode(msg, level, delay) {
+            this.msg = msg;
+            this.level = level;
+            this.delay = delay;
+            this.toastContainer = getToastContainer();
+            this.toastItem = null;
+            this.hideTimeout = null;
+            this.interval = 0;
+            this.showInterval = null;
+            this.hideInterval = null;
+        }
+
+        ToastNode.prototype.init = function () {
+            var that = this, div = document.createElement('div');
+            that.toastItem = div.cloneNode();
+            that.toastItem.className = 'sun-toast-item';
+            var toastItemInner = div.cloneNode();
+            toastItemInner.className = 'sun-toast-item-inner';
+            var toastPlaceholder = div.cloneNode();
+            toastPlaceholder.className = 'sun-toast-placeholder';
+            var toastIcon = div.cloneNode();
+            toastIcon.className = 'sun-toast-icon sun-toast-' + that.level;
+            var toastContent = div.cloneNode();
+            toastContent.className = 'sun-toast-content';
+            toastContent.innerHTML = that.msg;
+
+            toastItemInner.appendChild(toastPlaceholder);
+            toastItemInner.appendChild(toastIcon);
+            toastItemInner.appendChild(toastContent);
+            that.toastItem.appendChild(toastItemInner);
+        };
+
+        ToastNode.prototype.show = function () {
+            var that = this; that.interval = 100;
+            that.toastItem.style.zIndex = -1;
+            that.toastItem.style.opacity = '0.01';
+            that.toastItem.style.filter = 'Alpha(opacity = 1)';
+            that.toastItem.style.top = 0 - that.interval + 'px';
+            that.toastContainer.appendChild(that.toastItem);
+            that.showInterval = window.setInterval(function () {
+                that.interval -= 10;
+                if (that.interval < 0) {
+                    that.interval = 0;
+                }
+                that.toastItem.style.opacity = (100 - that.interval) / 100;
+                that.toastItem.style.filter = 'Alpha(opacity = ' + (100 - that.interval) + ')';
+                that.toastItem.style.top = 0 - that.interval + 'px';
+                if (that.interval <= 0) {
+                    window.clearInterval(that.showInterval);
+                    that.toastItem.style.zIndex = 0;
+                    that.hideTimeout = window.setTimeout(function () {
+                        that._hideInterval();
+                    }, that.delay);
+                    that.toastItem.onmouseenter = function () {
+                        window.clearTimeout(that.hideTimeout);
+                        window.clearInterval(that.hideInterval);
+                    };
+                    that.toastItem.onmouseleave = function () {
+                        window.clearTimeout(that.hideTimeout);
+                        that.hideTimeout = window.setTimeout(function () {
+                            that._hideInterval();
+                        }, 600);
+                    }
+                }
+            }, 30);
+        };
+
+        ToastNode.prototype._hideInterval = function () {
+            var that = this;
+            that.hideInterval = window.setInterval(function () {
+                that.toastItem.onmouseenter = null;
+                that.toastItem.onmouseleave = null;
+                that.interval += 10;
+                if (that.interval > 100) {
+                    that.interval = 100;
+                }
+                that.toastItem.style.zIndex = -1;
+                that.toastItem.style.opacity = (100 - that.interval) / 100;
+                that.toastItem.style.filter = 'Alpha(opacity = ' + (100 - that.interval) + ')';
+                that.toastItem.style.top = 0 - that.interval + 'px';
+                that.toastItem.style.height = (100 - that.interval) / 2 + 'px';
+                if (that.interval >= 100) {
+                    window.clearInterval(that.hideInterval);
+                    that.toastContainer.removeChild(that.toastItem);
+                }
+            }, 30);
+        };
+    })();
+
+    (function () {
         sunui.messager = [];
         sunui.alert = function(title, msg, level, handler) {
             var dialogNode = new DialogNode(), json = null;

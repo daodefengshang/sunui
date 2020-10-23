@@ -1,0 +1,76 @@
+html,body {margin: 0;padding: 0;}
+body {
+    _background-attachment: fixed;
+    _background-image: url(about:blank);
+}
+.sun-toast-container {
+    position: fixed;
+    left: 50%;
+    top: 60px;
+    width: 360px;
+    height: 0;
+    margin-left: -180px;
+    overflow: visible;
+    z-index: 9901;
+}
+.sun-toast-container .sun-toast-item {
+    position: relative;
+    left: 0;
+    top: 0;
+    z-index: 0;
+    width: 358px;
+    height: 48px;
+    margin: 12px 0 0 0;
+    border: 1px solid #E0E0FD;
+    background: #FCFCFC;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+.sun-toast-container .sun-toast-item-inner {
+    height: 100%;
+    cursor: default;
+}
+.sun-toast-container .sun-toast-placeholder {
+    display: inline-block;
+    *display: inline;
+    *zoom: 1;
+    width: 20px;
+    height: 100%;
+    vertical-align: middle;
+}
+.sun-toast-container .sun-toast-icon {
+    display: inline-block;
+    *display: inline;
+    *zoom: 1;
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin: 0 10px 0 0;
+}
+.sun-toast-container .sun-toast-icon.sun-toast-info {
+    background: url(../images/toast-level-icon.png) 0 0 no-repeat;
+}
+.sun-toast-container .sun-toast-icon.sun-toast-warning {
+    background: url(../images/toast-level-icon.png) 0 -20px no-repeat;
+}
+.sun-toast-container .sun-toast-icon.sun-toast-error {
+    background: url(../images/toast-level-icon.png) 0 -40px no-repeat;
+}
+.sun-toast-container .sun-toast-icon.sun-toast-help {
+    background: url(../images/toast-level-icon.png) 0 -60px no-repeat;
+}
+.sun-toast-container .sun-toast-content {
+    display: inline-block;
+    *display: inline;
+    *zoom: 1;
+    width: 288px;
+    color: #888888;
+    vertical-align: middle;
+    overflow: hidden;
+    -ms-text-overflow: clip;
+    text-overflow: clip;
+    white-space: nowrap;
+    font-size: 16px;
+}
