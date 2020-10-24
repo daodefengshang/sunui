@@ -604,6 +604,7 @@
             el.setAttribute('data-sunui-guid', guid());
             that.el = el;
             (function () {
+                json.panelDisplay = json.panelDisplay || 'none';
                 json.display = (json.display === 'inline-block' ? 'display: inline-block;*display: inline;*zoom: 1;' : 'display: block;');
                 json.verticalAlign = (json.verticalAlign ? 'vertical-align: ' + json.verticalAlign + ';' : '');
                 json.width = json.width || window.parseInt(el.style.width || 0, 10) || 180;
@@ -691,42 +692,46 @@
             selectContainer.appendChild(el);
             that.selectContainer = selectContainer;
             that.inp = inp;
+            that.createPanel();
+        };
 
-            //生成panel
+        ComboboxNode.prototype.createPanel = function () {
+            var that = this, selectContainer = that.selectContainer, div = document.createElement('div'), json = that.json;
             var selectPanel = div.cloneNode();
             selectPanel.className = 'sun-select-panel';
             selectPanel.style.cssText = 'width: ' + (json.panelWidth - 2) + 'px;height: ' + (json.panelHeight - 2)
-                + 'px;display: none;' + (typeof json.zIndex === typeof 1 ? 'z-index: ' + json.zIndex + ';' : '')
+                + 'px;display: ' + json.panelDisplay + ';' + (typeof json.zIndex === typeof 1 ? 'z-index: ' + json.zIndex + ';' : '')
                 + 'font-size: ' + window.Math.min(((json.height - 2 * json.borderWidth) / 5 + 2) * 2, json.height - 2 * json.borderWidth - 2) + 'px;';
             that.selectPanel = selectPanel;
             document.body.appendChild(selectPanel);
-
-            selectContainer.onclick = function (e) {
-                var ev = e || window.event;
-                if(ev.stopPropagation) {
-                    ev.stopPropagation();
-                } else {
-                    ev.cancelBubble = true;
-                }
-                if(!that.isPanelShow()) {
-                    for(var i = 0; i < combos.length; i++) {
-                        (function (i) {
-                            var existNode = combos[i];
-                            if (existNode.selectPanel && typeof existNode.isPanelShow === 'function' && existNode.isPanelShow()) {
-                                existNode.hidePanel();
-                            }
-                        })(i);
+            if (selectContainer) {
+                selectContainer.onclick = function (e) {
+                    var ev = e || window.event;
+                    if(ev.stopPropagation) {
+                        ev.stopPropagation();
+                    } else {
+                        ev.cancelBubble = true;
                     }
-                    if(json.readOnly) {
-                        return false;
+                    if(!that.isPanelShow()) {
+                        for(var i = 0; i < combos.length; i++) {
+                            (function (i) {
+                                var existNode = combos[i];
+                                if (existNode.selectPanel && typeof existNode.isPanelShow === 'function' && existNode.isPanelShow()) {
+                                    existNode.hidePanel();
+                                }
+                            })(i);
+                        }
+                        if(json.readOnly) {
+                            return false;
+                        }
+                        that.setPanelPosition();
+                        that.showPanel();
+                    } else {
+                        that.hidePanel();
                     }
-                    that.setPanelPosition();
-                    that.showPanel();
-                } else {
-                    that.hidePanel();
-                }
-                return false;
-            };
+                    return false;
+                };
+            }
             selectPanel.onclick = function (e) {
                 var ev = e || window.event;
                 if(ev.stopPropagation) {
