@@ -202,6 +202,42 @@
         }
     }
 
+    function hover(node, enter, leave) {
+        if ('onmouseenter' in node) {
+            node.onmouseenter = function () {
+                enter(window.event);
+            };
+            node.onmouseleave = function () {
+                leave ? leave(window.event) : enter(window.event);
+            };
+        } else {
+            node.onmouseover = function (e) {
+                var that = this, t = e.relatedTarget, t2 = e.target;
+                if (!(that === t || (that.compareDocumentPosition(t) & 16))
+                    && !!(that === t2 || (that.compareDocumentPosition(t2) & 16))) {
+                    enter(e);
+                }
+            };
+            node.onmouseout = function (e) {
+                var that = this, t = e.relatedTarget, t2 = e.target;
+                if (!(that === t || (that.compareDocumentPosition(t) & 16))
+                    && !!(that === t2 || (that.compareDocumentPosition(t2) & 16))) {
+                    leave ? leave(e) : enter(e);
+                }
+            };
+        }
+    }
+
+    function unhover(node) {
+        if ('onmouseenter' in node) {
+            node.onmouseenter = null;
+            node.onmouseleave = null;
+        } else {
+            node.onmouseover = null;
+            node.onmouseout = null;
+        }
+    }
+
     (function () {
         var getToastContainer = (function () {
             var i = false, baseEl = document.createElement('div');
@@ -279,16 +315,15 @@
                     that.hideTimeout = window.setTimeout(function () {
                         that._hideInterval();
                     }, that.delay);
-                    that.toastItem.onmouseenter = function () {
+                    hover(that.toastItem, function (e) {
                         window.clearTimeout(that.hideTimeout);
                         window.clearInterval(that.hideInterval);
-                    };
-                    that.toastItem.onmouseleave = function () {
+                    }, function (e) {
                         window.clearTimeout(that.hideTimeout);
                         that.hideTimeout = window.setTimeout(function () {
                             that._hideInterval();
                         }, 600);
-                    }
+                    });
                 }
             }, 30);
         };
@@ -296,8 +331,7 @@
         ToastNode.prototype._hideInterval = function () {
             var that = this;
             that.hideInterval = window.setInterval(function () {
-                that.toastItem.onmouseenter = null;
-                that.toastItem.onmouseleave = null;
+                unhover(that.toastItem);
                 that.interval += 10;
                 if (that.interval > 100) {
                     that.interval = 100;
