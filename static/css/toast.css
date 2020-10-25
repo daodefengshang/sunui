@@ -7,22 +7,21 @@ body {
     position: fixed;
     left: 50%;
     top: 60px;
-    width: 360px;
+    width: 0;
     height: 0;
-    margin-left: -180px;
     overflow: visible;
     z-index: 9901;
 }
 .sun-toast-container .sun-toast-item {
     position: relative;
-    left: 0;
+    left: -180px;
     top: 0;
     z-index: 0;
     width: 358px;
     height: 48px;
     margin: 12px 0 0 0;
     border: 1px solid #E0E0FD;
-    background: #FCFCFC;
+    background: #FFCC99;
     -webkit-box-sizing: content-box;
     -moz-box-sizing: content-box;
     box-sizing: content-box;
@@ -30,6 +29,18 @@ body {
     -moz-border-radius: 5px;
     border-radius: 5px;
     overflow: hidden;
+}
+.sun-toast-container .sun-toast-item.sun-toast-info {
+    background: #88EE88;
+}
+.sun-toast-container .sun-toast-item.sun-toast-warning {
+    background: #EECC88;
+}
+.sun-toast-container .sun-toast-item.sun-toast-error {
+    background: #FF8899;
+}
+.sun-toast-container .sun-toast-item.sun-toast-help {
+    background: #9999FF;
 }
 .sun-toast-container .sun-toast-item-inner {
     height: 100%;
@@ -52,16 +63,16 @@ body {
     vertical-align: middle;
     margin: 0 10px 0 0;
 }
-.sun-toast-container .sun-toast-icon.sun-toast-info {
+.sun-toast-container .sun-toast-info .sun-toast-icon {
     background: url(../images/toast-level-icon.png) 0 0 no-repeat;
 }
-.sun-toast-container .sun-toast-icon.sun-toast-warning {
+.sun-toast-container .sun-toast-warning .sun-toast-icon {
     background: url(../images/toast-level-icon.png) 0 -20px no-repeat;
 }
-.sun-toast-container .sun-toast-icon.sun-toast-error {
+.sun-toast-container .sun-toast-error .sun-toast-icon {
     background: url(../images/toast-level-icon.png) 0 -40px no-repeat;
 }
-.sun-toast-container .sun-toast-icon.sun-toast-help {
+.sun-toast-container .sun-toast-help .sun-toast-icon {
     background: url(../images/toast-level-icon.png) 0 -60px no-repeat;
 }
 .sun-toast-container .sun-toast-content {
@@ -69,7 +80,7 @@ body {
     *display: inline;
     *zoom: 1;
     width: 288px;
-    color: #888888;
+    color: #FCFCFC;
     vertical-align: middle;
     overflow: hidden;
     -ms-text-overflow: clip;

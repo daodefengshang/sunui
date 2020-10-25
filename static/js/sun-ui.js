@@ -277,13 +277,13 @@
         ToastNode.prototype.init = function () {
             var that = this, div = document.createElement('div');
             that.toastItem = div.cloneNode();
-            that.toastItem.className = 'sun-toast-item';
+            that.toastItem.className = 'sun-toast-item sun-toast-' + that.level;
             var toastItemInner = div.cloneNode();
             toastItemInner.className = 'sun-toast-item-inner';
             var toastPlaceholder = div.cloneNode();
             toastPlaceholder.className = 'sun-toast-placeholder';
             var toastIcon = div.cloneNode();
-            toastIcon.className = 'sun-toast-icon sun-toast-' + that.level;
+            toastIcon.className = 'sun-toast-icon';
             var toastContent = div.cloneNode();
             toastContent.className = 'sun-toast-content';
             toastContent.innerHTML = that.msg;
