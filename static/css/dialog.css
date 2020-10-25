@@ -25,8 +25,8 @@ body {
     width: 100%;
     height: 100%;
     background: #202020;
-    opacity: 0.30;
-    filter: Alpha(opacity = 30);
+    opacity: 0.10;
+    filter: Alpha(opacity = 10);
 }
 .sun-dialog-layer .sun-dialog-mask {
     width: 100%;
@@ -121,25 +121,25 @@ body {
     -webkit-border-radius: 18px;
     -moz-border-radius: 18px;
     border-radius: 18px;
-    overflow: hidden;
+    overflow: visible;
 }
 .sun-dialog-layer .sun-dialog-btn-sure {
 	background: #6187D2;
-    background: url(../images/dialog-btn-bg.png) 0 0 no-repeat\9;
+    background: none\9;
     left: 100px;
 }
 .sun-dialog-layer .sun-dialog-btn-sure:hover {
 	background: #5177C2;
-    background: url(../images/dialog-btn-bg.png) 0 -36px no-repeat\9;
+    background: none\9;
 }
 .sun-dialog-layer .sun-dialog-btn-cancel {
 	background: #B6B9C2;
-    background: url(../images/dialog-btn-bg.png) 0 -72px no-repeat\9;
+    background: none\9;
     right: 100px;
 }
 .sun-dialog-layer .sun-dialog-btn-cancel:hover {
 	background: #A6A9B2;
-    background: url(../images/dialog-btn-bg.png) 0 -108px no-repeat\9;
+    background: none\9;
 }
 .sun-dialog-layer .sun-dialog-placeholder {
     display: inline-block;

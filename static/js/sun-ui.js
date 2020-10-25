@@ -238,6 +238,74 @@
         }
     }
 
+    (function(){
+        if (!lteIE8 || sunui.vml) {return;}
+        sunui.vml = function(name){
+            return new SunuiVml().create(name || "rect");
+        };
+        if (!document.namespaces["sunui-vml"]){
+            document.createStyleSheet().addRule(".sunui-vml", "behavior:url(#default#VML);display:inline-block;");
+            document.namespaces.add("sunui-vml", "urn:schemas-microsoft-com:vml");
+        }
+        function SunuiVml () {}
+        SunuiVml.prototype = {
+            create : function(name){
+                this.node = document.createElement('<sunui-vml:' + name + ' class="sunui-vml">');
+                return this;
+            },
+            appendTo: function(parent){
+                if(this.node && parent.nodeType === 1){
+                    parent.appendChild(this.node);
+                }
+                return this;
+            },
+            remove: function () {
+                if (this.node.parentNode) {
+                    this.node.parentNode.removeChild(this.node);
+                }
+            },
+            attr : function(bag){
+                for(var i in bag){
+                    if(bag.hasOwnProperty(i)){
+                        this.node.setAttribute(i,bag[i])
+                    }
+                }
+                return this;
+            },
+            html : function (h) {
+                this.node.innerHTML = h;
+                return this;
+            },
+            text : function (text) {
+                this.node.innerText = text;
+                return this;
+            },
+            css: function(bag){
+                for(var i in bag){
+                    if(bag.hasOwnProperty(i)) {
+                        if (i === 'opacity') {
+                            this.node.style.filter = 'alpha(opacity='+ bag[i] * 100 + ')';
+                        } else {
+                            this.node.style[i] = bag[i];
+                        }
+                    }
+                }
+                return this;
+            },
+            hasClass: function (cls) {
+                return sunui.hasClass(this.node, cls);
+            },
+            addClass: function (cls) {
+                sunui.addClass(this.node, cls);
+                return this;
+            },
+            removeClass: function (cls) {
+                sunui.removeClass(this.node, cls);
+                return this;
+            }
+        }
+    })();
+
     (function () {
         var getToastContainer = (function () {
             var i = false, baseEl = document.createElement('div');
@@ -350,6 +418,7 @@
     })();
 
     (function () {
+        var vmlBtn = {width: 90, height: 36, sureBg: '#6187D2', sureBgHover: '#5177C2', cancelBg: '#B6B9C2', cancelBgHover: '#A6A9B2'};
         sunui.messager = [];
         sunui.alert = function(title, msg, level, handler) {
             var dialogNode = new DialogNode(), json = null;
@@ -454,13 +523,63 @@
             that.dialogMask.className = 'sun-dialog-mask';
             that.dialogBtnSure = div.cloneNode();
             that.dialogBtnSure.className = 'sun-dialog-btn sun-dialog-btn-sure';
-            that.dialogBtnSure.innerHTML = json.yes;
+            if (sunui.vml) {
+                (function () {
+                    var sure = sunui.vml('roundrect')
+                        .css({width: vmlBtn.width, height: vmlBtn.height, margin: '-0.6px 0 0 -1.5px'})
+                        .attr({fillcolor: vmlBtn.sureBg, filled: true, stroked: false, arcsize: 0.5})
+                        .html(json.yes)
+                        .appendTo(that.dialogBtnSure);
+                    hover(that.dialogBtnSure, function (e) {
+                        sure.remove();
+                        sure = sunui.vml('roundrect')
+                            .css({width: vmlBtn.width, height: vmlBtn.height, margin: '-0.6px 0 0 -1.5px'})
+                            .attr({fillcolor: vmlBtn.sureBgHover, filled: true, stroked: false, arcsize: 0.5})
+                            .html(json.yes)
+                            .appendTo(that.dialogBtnSure);
+                    }, function (e) {
+                        sure.remove();
+                        sure = sunui.vml('roundrect')
+                            .css({width: vmlBtn.width, height: vmlBtn.height, margin: '-0.6px 0 0 -1.5px'})
+                            .attr({fillcolor: vmlBtn.sureBg, filled: true, stroked: false, arcsize: 0.5})
+                            .html(json.yes)
+                            .appendTo(that.dialogBtnSure);
+                    });
+                })();
+            } else {
+                that.dialogBtnSure.innerHTML = json.yes;
+            }
             if (type === 'alert') {
                 that.dialogBtnSure.style.left = '155px';
             } else {
                 that.dialogBtnCancel = div.cloneNode();
                 that.dialogBtnCancel.className = 'sun-dialog-btn sun-dialog-btn-cancel';
-                that.dialogBtnCancel.innerHTML = json.no;
+                if (sunui.vml) {
+                    (function () {
+                        var cancel = sunui.vml('roundrect')
+                            .css({width: vmlBtn.width, height: vmlBtn.height, margin: '-0.5px 0 0 -1.5px'})
+                            .attr({fillcolor: vmlBtn.cancelBg, filled: true, stroked: false, arcsize: 0.5})
+                            .html(json.no)
+                            .appendTo(that.dialogBtnCancel);
+                        hover(that.dialogBtnCancel, function (e) {
+                            cancel.remove();
+                            cancel = sunui.vml('roundrect')
+                                .css({width: vmlBtn.width, height: vmlBtn.height, margin: '-0.5px 0 0 -1.5px'})
+                                .attr({fillcolor: vmlBtn.cancelBgHover, filled: true, stroked: false, arcsize: 0.5})
+                                .html(json.no)
+                                .appendTo(that.dialogBtnCancel);
+                        }, function (e) {
+                            cancel.remove();
+                            cancel = sunui.vml('roundrect')
+                                .css({width: vmlBtn.width, height: vmlBtn.height, margin: '-0.5px 0 0 -1.5px'})
+                                .attr({fillcolor: vmlBtn.cancelBg, filled: true, stroked: false, arcsize: 0.5})
+                                .html(json.no)
+                                .appendTo(that.dialogBtnCancel);
+                        });
+                    })();
+                } else {
+                    that.dialogBtnCancel.innerHTML = json.no;
+                }
             }
             that.dialogClose = div.cloneNode();
             that.dialogClose.className = 'sun-dialog-close';
