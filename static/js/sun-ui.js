@@ -1,6 +1,7 @@
 (function (window, document) {
     if (window.sunui) {return;}
-    var sunui = {}, undef = typeof undf, lteIE8 = (function () {return !+"\v1";})();
+    var sunui = {}, lteIE8 = (function () {return !+"\v1";})(),
+        undef = (function () {var ndf;return ndf})();
 
     sunui.oninput = function (node, callback){
         if(document.addEventListener){
@@ -643,9 +644,7 @@
         };
 
         DialogNode.prototype.showNext = function () {
-            var that = this;
             if(sunui.messager.length) {sunui.messager[0].show();}
-            that = null;
         };
 
         DialogNode.prototype._moveListener = function () {
