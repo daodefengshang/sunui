@@ -761,7 +761,7 @@
                 json.width = json.width || window.parseInt(el.style.width || 0, 10) || 180;
                 json.height = json.height || window.parseInt(el.style.height || 0, 10) || 22;
                 json.borderWidth = window.parseInt(json.borderWidth || 0, 10) || 2;
-                if (el.style.position === 'absolute' || el.style.position === 'relative') {
+                if (el.style.position === 'absolute' || el.style.position === 'relative' || el.style.position === 'fixed') {
                     json.position = el.style.position;
                 } else {
                     json.position = 'relative';
@@ -845,6 +845,8 @@
             that.inp = inp;
             that.createPanel();
         };
+
+
 
         ComboboxNode.prototype.createPanel = function () {
             var that = this, selectContainer = that.selectContainer, div = document.createElement('div'), json = that.json;
@@ -1069,10 +1071,10 @@
         };
         ComboboxNode.prototype._setValue = function () {
             var that = this, json = that.json;
-            var value = that.getValue();
-            var text = that.getText();
+            var value = that.getValue(), text = that.getText();
             that.el.value = (value == undef ? '' : (sunui.isArray(value) ? value.join(json.separator) : value));
             that.inp.value = (text == undef ? '' : (sunui.isArray(text) ? text.join(json.separator) : text));
+            typeof json.onSetValue === 'function' && json.onSetValue(that, value, text);
             return that;
         };
         ComboboxNode.prototype.setValue = function (value) {
