@@ -370,7 +370,7 @@
             that.toastItem.style.top = 0 - that.interval + 'px';
             that.toastContainer.appendChild(that.toastItem);
             that.showInterval = window.setInterval(function () {
-                that.interval -= 10;
+                that.interval -= 6;
                 if (that.interval < 0) {
                     that.interval = 0;
                 }
@@ -393,14 +393,14 @@
                         }, 600);
                     });
                 }
-            }, 30);
+            }, 18);
         };
 
         ToastNode.prototype._hideInterval = function () {
             var that = this;
             that.hideInterval = window.setInterval(function () {
                 unhover(that.toastItem);
-                that.interval += 10;
+                that.interval += 6;
                 if (that.interval > 100) {
                     that.interval = 100;
                 }
@@ -413,7 +413,7 @@
                     window.clearInterval(that.hideInterval);
                     that.toastContainer.removeChild(that.toastItem);
                 }
-            }, 30);
+            }, 18);
         };
     })();
 
