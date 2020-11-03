@@ -366,7 +366,7 @@
             var that = this; that.interval = 100;
             that.toastItem.style.zIndex = -1;
             that.toastItem.style.opacity = '0.01';
-            that.toastItem.style.filter = 'Alpha(opacity = 1)';
+            that.toastItem.style.filter = 'Alpha(opacity=1)';
             that.toastItem.style.top = 0 - that.interval + 'px';
             that.toastContainer.appendChild(that.toastItem);
             that.showInterval = window.setInterval(function () {
@@ -375,11 +375,13 @@
                     that.interval = 0;
                 }
                 that.toastItem.style.opacity = (100 - that.interval) / 100;
-                that.toastItem.style.filter = 'Alpha(opacity = ' + (100 - that.interval) + ')';
+                that.toastItem.style.filter = 'Alpha(opacity=' + (100 - that.interval) + ')';
                 that.toastItem.style.top = 0 - that.interval + 'px';
                 if (that.interval <= 0) {
                     window.clearInterval(that.showInterval);
                     that.toastItem.style.zIndex = 0;
+                    that.toastItem.style.opacity = '1';
+                    that.toastItem.style.filter = 'none';
                     that.hideTimeout = window.setTimeout(function () {
                         that._hideInterval();
                     }, that.delay);
@@ -406,7 +408,7 @@
                 }
                 that.toastItem.style.zIndex = -1;
                 that.toastItem.style.opacity = (100 - that.interval) / 100;
-                that.toastItem.style.filter = 'Alpha(opacity = ' + (100 - that.interval) + ')';
+                that.toastItem.style.filter = 'Alpha(opacity =' + (100 - that.interval) + ')';
                 that.toastItem.style.top = 0 - that.interval + 'px';
                 that.toastItem.style.height = (100 - that.interval) / 2 + 'px';
                 if (that.interval >= 100) {
@@ -599,7 +601,7 @@
         DialogNode.prototype.show = function () {
             var that = this, dialogContainer = that.dialogContainer, interval = 0;
             dialogContainer.style.opacity = '0.01';
-            dialogContainer.style.filter = 'Alpha(opacity = 1)';
+            dialogContainer.style.filter = 'Alpha(opacity=1)';
             document.body.appendChild(that.dialogModal);
             that.showInterval = window.setInterval(function () {
                 interval += 10;
@@ -607,9 +609,10 @@
                     interval = 100;
                 }
                 dialogContainer.style.opacity = '' + (interval / 100);
-                dialogContainer.style.filter = 'Alpha(opacity = ' + interval + ')';
+                dialogContainer.style.filter = 'Alpha(opacity=' + interval + ')';
                 if (interval >= 100) {
                     window.clearInterval(that.showInterval);
+                    dialogContainer.style.filter = 'none';
                     that.dialogBtnSure.onclick = function (e) {
                         var ev = e || window.event;
                         if(ev.stopPropagation) {ev.stopPropagation();} else {ev.cancelBubble = true;}
