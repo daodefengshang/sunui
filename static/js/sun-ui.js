@@ -1,7 +1,18 @@
-(function (window, document) {
+(function (window, document, undefined) {
     if (window.sunui) {return;}
-    var sunui = {}, lteIE8 = (function () {return !+"\v1";})(),
-        undef = (function () {var ndf;return ndf})();
+    var sunui = {}, lteIE8 = (function () {return !+"\v1";})();
+
+    sunui.encodeHtml = function (s) {
+        s = (s != undefined) ? s : this.toString();
+        return (typeof s !== "string") ? s :
+            s.replace(/"|&|'|<|>|[\x00-\x20]|[\x7F-\xFF]|[\u0100-\u2700]/g,
+                function($0){
+                    var c = $0.charCodeAt(0), r = ["&#"];
+                    c = (c === 0x20) ? 0xA0 : c;
+                    r.push(c); r.push(";");
+                    return r.join("");
+                });
+    };
 
     sunui.oninput = function (node, callback){
         if(document.addEventListener){
@@ -171,7 +182,7 @@
 
         docElem = doc.documentElement;
 
-        if ( typeof elem.getBoundingClientRect !== undef ) {
+        if ( typeof elem.getBoundingClientRect !== undefined ) {
             box = elem.getBoundingClientRect();
         }
         win = getWindow( doc );
@@ -654,7 +665,7 @@
             var disX = 0, disY = 0,
                 that = this, dialogModal = that.dialogModal, container = that.dialogContainer, el = that.dialogMask,
                 doel = el.setCapture ? el : document,
-                dialogWidth = undef, dialogHeight = undef;
+                dialogWidth = undefined, dialogHeight = undefined;
             el.onmousedown = function (ev) {
                 var oEvent = ev || event;
                 dialogWidth = dialogWidth || container.offsetWidth;
@@ -1037,7 +1048,7 @@
             if (json.stripe && index % 2 === 0) {
                 stripe = ' sun-stripe';
             }
-            if (value === json.value[value] && that.usedValues[value] == undef) {
+            if (value === json.value[value] && that.usedValues[value] == undefined) {
                 that.usedValues[value] = value;
                 selected = ' sun-select-selected';
                 that.valueIndexs.push(index);
@@ -1052,7 +1063,7 @@
             var that = this, json = that.json, valueIndexs = that.valueIndexs, datas = that.datas;
             var values = [];
             if (json.singleSelect) {
-                values.push(valueIndexs.length < 1 ? undef : datas[valueIndexs[0]][json.valueField]);
+                values.push(valueIndexs.length < 1 ? undefined : datas[valueIndexs[0]][json.valueField]);
             } else {
                 for (var i = 0; i < valueIndexs.length; i++) {
                     values.push(datas[valueIndexs[i]][json.valueField]);
@@ -1064,7 +1075,7 @@
             var that = this, json = that.json, valueIndexs = that.valueIndexs, datas = that.datas;
             var texts = [];
             if (json.singleSelect) {
-                texts.push(valueIndexs.length < 1 ? undef : (datas[valueIndexs[0]][json.textField] || datas[valueIndexs[0]][json.valueField]));
+                texts.push(valueIndexs.length < 1 ? undefined : (datas[valueIndexs[0]][json.textField] || datas[valueIndexs[0]][json.valueField]));
             } else {
                 for (var i = 0; i < valueIndexs.length; i++) {
                     texts.push(datas[valueIndexs[i]][json.textField] || datas[valueIndexs[i]][json.valueField]);
@@ -1075,8 +1086,8 @@
         ComboboxNode.prototype._setValue = function () {
             var that = this, json = that.json;
             var value = that.getValue(), text = that.getText();
-            that.el.value = (value == undef ? '' : (sunui.isArray(value) ? value.join(json.separator) : value));
-            that.inp.value = (text == undef ? '' : (sunui.isArray(text) ? text.join(json.separator) : text));
+            that.el.value = (value == undefined ? '' : (sunui.isArray(value) ? value.join(json.separator) : value));
+            that.inp.value = (text == undefined ? '' : (sunui.isArray(text) ? text.join(json.separator) : text));
             typeof json.onSetValue === 'function' && json.onSetValue(that, value, text);
             return that;
         };
@@ -1110,10 +1121,10 @@
                 sunui.removeClass(trs[that.valueIndexs[i]], 'sun-select-selected');
             }
             that.valueIndexs.length = 0;
-            var value = undef;
+            var value = undefined;
             for (var i = 0; i < datas.length; i++) {
                 value = datas[i][json.valueField];
-                if (value === val[value] && that.usedValues[value] == undef) {
+                if (value === val[value] && that.usedValues[value] == undefined) {
                     that.usedValues[value] = value;
                     that.valueIndexs.push(i);
                     sunui.addClass(trs[i], 'sun-select-selected');
