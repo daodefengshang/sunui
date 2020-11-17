@@ -55,6 +55,15 @@
         }
     };
 
+    sunui.decimal2Hex = function (num) {
+        var hex = Number(num).toString(16).toUpperCase();
+        return hex.length === 1 ? '0' + hex : hex;
+    };
+
+    sunui.hex2Decimal = function (hex) {
+        return parseInt(hex, 16);
+    };
+
     sunui.isArray = function (data) {
         return Object.prototype.toString.call(data) === '[object Array]';
     };
@@ -1163,6 +1172,673 @@
                 that.hidePanel();
             }
             return that;
+        };
+    })();
+
+    (function () {
+        sunui.colorPanel = function (node, json) {
+            if(!node) {
+                return null;
+            }
+            var el = typeof node === 'string' ? document.getElementById(node) : (node.length ? node[0] : node);
+            var colorPanelNode = null, existNode = null;
+            if(el && combos.length) {
+                for(var i = 0; i < combos.length; i++) {
+                    existNode = combos[i];
+                    if(existNode.el === el || (existNode.el.getAttribute('data-sunui-guid') && existNode.el.getAttribute('data-sunui-guid') === el.getAttribute('data-sunui-guid'))) {
+                        return existNode;
+                    }
+                }
+            }
+            json = json || {};
+            if(el) {
+                colorPanelNode = new ColorPanelNode();
+                colorPanelNode.init(el, json);
+                combos.push(colorPanelNode);
+            }
+            return colorPanelNode;
+        };
+
+        function ColorPanelNode() {
+            this.el = null;
+            this.json = null;
+            this.colorObj = {
+                barR: 255, barG: 0, barB: 0, // 纯彩色面板rgb
+                barY: 0,// 纯彩色面板bar的垂直位置
+                areaX: 255, areaY: 0,// 主面板pointer的位置
+                r: 255, g: 0, b: 0,// 合成rgb
+                rgb: 'FF0000',// 合成十六进制rgb
+                currentRgb: undefined// 当前十六进制rgb
+            };
+
+            this.multiple = 2;
+
+            this.colorContainer = null;
+            this.colorArea = null;
+            this.colorAreaLayer = null;
+            this.colorAreaPoint = null;
+            this.items = [];
+            this.colorIndexLayer = null;
+            this.colorBar = null;
+            this.showNew = null;
+            this.showCurrent = null;
+            this.webSafe = null;
+            this.colorSure = null;
+            this.rgbR = null;
+            this.rgbG = null;
+            this.rgbB = null;
+            this.rgb0x = null;
+        }
+        ColorPanelNode.prototype.init = function (el, json) {
+            var that = this;
+            el.setAttribute('data-sunui-guid', guid());
+            that.el = el;
+            that.json = json;
+            that._setColor(json.rgb || undefined);
+            that._createPanel();
+            that._initPanel();
+        };
+        ColorPanelNode.prototype._createPanel = function () {
+            var that = this;
+            var div = document.createElement('div'), span = document.createElement('span');
+            (function () {
+                that.colorContainer = div.cloneNode();
+                that.colorContainer.className = 'sunui-color-container';
+
+                that.colorArea = div.cloneNode();
+                that.colorArea.className = 'sunui-color-area';
+
+                that.colorAreaPoint = span.cloneNode();
+                that.colorAreaPoint.className = 'sunui-color-area-point';
+                that.colorArea.appendChild(that.colorAreaPoint);
+
+                that.colorAreaLayer = span.cloneNode();
+                that.colorAreaLayer.className = 'sunui-color-area-layer';
+                that.colorArea.appendChild(that.colorAreaLayer);
+                (function () {
+                    for(var i = 0, len = 256 / that.multiple; i < len; i++) {
+                        var ele = div.cloneNode();
+                        that.colorArea.appendChild(ele);
+                        that.items.push(ele);
+                    }
+                })();
+                that.colorContainer.appendChild(that.colorArea);
+            })();
+
+            (function () {
+                var colorIndex = div.cloneNode();
+                colorIndex.className = 'sunui-color-index';
+                var red2pink = div.cloneNode();
+                red2pink.className = 'sunui-color-red2pink';
+                colorIndex.appendChild(red2pink);
+                var pink2blue = div.cloneNode();
+                pink2blue.className = 'sunui-color-pink2blue';
+                colorIndex.appendChild(pink2blue);
+                var blue2cyan = div.cloneNode();
+                blue2cyan.className = 'sunui-color-blue2cyan';
+                colorIndex.appendChild(blue2cyan);
+                var cyan2green = div.cloneNode();
+                cyan2green.className = 'sunui-color-cyan2green';
+                colorIndex.appendChild(cyan2green);
+                var green2yellow = div.cloneNode();
+                green2yellow.className = 'sunui-color-green2yellow';
+                colorIndex.appendChild(green2yellow);
+                var yellow2red = div.cloneNode();
+                yellow2red.className = 'sunui-color-yellow2red';
+                colorIndex.appendChild(yellow2red);
+                that.colorBar = div.cloneNode();
+                that.colorBar.className = 'sunui-color-bar-container';
+                var colorBarLeft = div.cloneNode();
+                colorBarLeft.className = 'sunui-color-bar sunui-color-bar-left';
+                that.colorBar.appendChild(colorBarLeft);
+                var colorBarRight = div.cloneNode();
+                colorBarRight.className = 'sunui-color-bar sunui-color-bar-right';
+                that.colorBar.appendChild(colorBarRight);
+                colorIndex.appendChild(that.colorBar);
+                that.colorIndexLayer = div.cloneNode();
+                that.colorIndexLayer.className = 'sunui-color-index-layer';
+                colorIndex.appendChild(that.colorIndexLayer);
+                that.colorContainer.appendChild(colorIndex);
+            })();
+
+            (function () {
+                var colorRgbContainer = div.cloneNode();
+                colorRgbContainer.className = 'sunui-color-rgb-container';
+                var colorShowContainer = div.cloneNode();
+                colorShowContainer.className = 'sunui-color-show-container';
+                var colorTextNew = div.cloneNode();
+                colorTextNew.className = 'sunui-color-text sunui-color-text-new';
+                colorTextNew.innerHTML = '新的';
+                colorShowContainer.appendChild(colorTextNew);
+                that.showNew = div.cloneNode();
+                that.showNew.className = 'sunui-color-show sunui-color-show-new';
+                colorShowContainer.appendChild(that.showNew);
+                that.showCurrent = div.cloneNode();
+                that.showCurrent.className = 'sunui-color-show sunui-color-show-current';
+                colorShowContainer.appendChild(that.showCurrent);
+                var colorTextCurrent = div.cloneNode();
+                colorTextCurrent.className = 'sunui-color-text sunui-color-text-current';
+                colorTextCurrent.innerHTML = '当前';
+                colorShowContainer.appendChild(colorTextCurrent);
+                that.webSafe = div.cloneNode();
+                that.webSafe.className = 'sunui-color-web-safe';
+                that.webSafe.appendChild(div.cloneNode());
+                colorShowContainer.appendChild(that.webSafe);
+                colorRgbContainer.appendChild(colorShowContainer);
+                var colorR = div.cloneNode();
+                colorR.className = 'sunui-color-rgb sunui-color-r';
+                var spanR = span.cloneNode();
+                spanR.innerHTML = 'R:';
+                colorR.appendChild(spanR);
+                that.rgbR = document.createElement('input');
+                that.rgbR.type = 'text';
+                that.rgbR.maxLength = 3;
+                colorR.appendChild(that.rgbR);
+                colorRgbContainer.appendChild(colorR);
+                var colorG = div.cloneNode();
+                colorG.className = 'sunui-color-rgb sunui-color-g';
+                var spanG = span.cloneNode();
+                spanG.innerHTML = 'G:';
+                colorG.appendChild(spanG);
+                that.rgbG = document.createElement('input');
+                that.rgbG.type = 'text';
+                that.rgbG.maxLength = 3;
+                colorG.appendChild(that.rgbG);
+                colorRgbContainer.appendChild(colorG);
+                var colorB = div.cloneNode();
+                colorB.className = 'sunui-color-rgb sunui-color-b';
+                var spanB = span.cloneNode();
+                spanB.innerHTML = 'B:';
+                colorB.appendChild(spanB);
+                that.rgbB = document.createElement('input');
+                that.rgbB.type = 'text';
+                that.rgbB.maxLength = 3;
+                colorB.appendChild(that.rgbB);
+                colorRgbContainer.appendChild(colorB);
+                var color0xrgb = div.cloneNode();
+                color0xrgb.className = 'sunui-color-0xrgb';
+                var span0xrgb = span.cloneNode();
+                span0xrgb.innerHTML = '#';
+                color0xrgb.appendChild(span0xrgb);
+                that.rgb0x = document.createElement('input');
+                that.rgb0x.type = 'text';
+                that.rgb0x.maxLength = 6;
+                color0xrgb.appendChild(that.rgb0x);
+                colorRgbContainer.appendChild(color0xrgb);
+                that.colorContainer.appendChild(colorRgbContainer);
+            })();
+
+            (function () {
+                that.colorSure = div.cloneNode();
+                that.colorSure.className = 'sunui-color-sure';
+                that.colorSure.innerHTML = '确定';
+                that.colorContainer.appendChild(that.colorSure);
+            })();
+            that.el.appendChild(that.colorContainer);
+        };
+        ColorPanelNode.prototype._initPanel = function () {
+            var that = this;
+            that._setShowCurrentColor(that.colorObj);
+            that._fillColor(that.items, that.colorObj);
+            that.colorObj = that._getColor(that.colorObj);
+            that._fillInput(that.colorObj);
+            that._dragEvent(that.colorIndexLayer, function (offsetX, offsetY) {
+                that.colorObj = that._getBarRgb(that.colorObj, offsetY);
+                that.colorObj = that._getColor(that.colorObj);
+                that._moveColorBar(that.colorObj);
+                that._fillColor(that.items, that.colorObj);
+                that._fillInput(that.colorObj);
+            });
+            that._dragEvent(that.colorAreaLayer, function (x, y) {
+                that.colorObj.areaX = x; that.colorObj.areaY = y;
+                that.colorObj = that._getColor(that.colorObj);
+                that._moveAreaPoint(that.colorObj);
+                that._fillInput(that.colorObj);
+            });
+            that._dragBarEvent(that.colorBar, function (offsetY) {
+                that.colorObj = that._getBarRgb(that.colorObj, offsetY);
+                that.colorObj = that._getColor(that.colorObj);
+                that._fillColor(that.items, that.colorObj);
+                that._fillInput(that.colorObj);
+            });
+            sunui.oninput(that.rgbR, function () {
+                if (document.activeElement === that.rgbR) {
+                    if (that.rgbR.value === '') {
+                        that.rgbR.value = 0;
+                    }
+                    if (!/^\d+$/gi.test(that.rgbR.value) || that.rgbR.value < 0 || that.rgbR.value > 255) {
+                        that.rgbR.value = that.colorObj.r;
+                        return;
+                    }
+                    if (that.rgbR.value == that.colorObj.r) {
+                        return;
+                    }
+                    that.colorObj = that._getColorPosition(that.colorObj, that.rgbR.value, that.rgbG.value, that.rgbB.value);
+                    that._moveColorBar(that.colorObj);
+                    that._moveAreaPoint(that.colorObj);
+                    that._fillColor(that.items, that.colorObj);
+                    that._fillInput(that.colorObj);
+                }
+            });
+            sunui.oninput(that.rgbG, function () {
+                if (document.activeElement === that.rgbG) {
+                    if (that.rgbG.value === '') {
+                        that.rgbG.value = 0;
+                    }
+                    if (!/^\d+$/gi.test(that.rgbG.value) || that.rgbG.value < 0 || that.rgbG.value > 255) {
+                        that.rgbG.value = that.colorObj.g;
+                        return;
+                    }
+                    if (that.rgbG.value == that.colorObj.g) {
+                        return;
+                    }
+                    that.colorObj = that._getColorPosition(that.colorObj, that.rgbR.value, that.rgbG.value, that.rgbB.value);
+                    that._moveColorBar(that.colorObj);
+                    that._moveAreaPoint(that.colorObj);
+                    that._fillColor(that.items, that.colorObj);
+                    that._fillInput(that.colorObj);
+                }
+            });
+            sunui.oninput(that.rgbB, function () {
+                if (document.activeElement === that.rgbB) {
+                    if (that.rgbB.value === '') {
+                        that.rgbB.value = 0;
+                    }
+                    if (!/^\d+$/gi.test(that.rgbB.value) || that.rgbB.value < 0 || that.rgbB.value > 255) {
+                        that.rgbB.value = that.colorObj.b;
+                        return;
+                    }
+                    if (that.rgbB.value == that.colorObj.b) {
+                        return;
+                    }
+                    that.colorObj = that._getColorPosition(that.colorObj, that.rgbR.value, that.rgbG.value, that.rgbB.value);
+                    that._moveColorBar(that.colorObj);
+                    that._moveAreaPoint(that.colorObj);
+                    that._fillColor(that.items, that.colorObj);
+                    that._fillInput(that.colorObj);
+                }
+            });
+            sunui.oninput(that.rgb0x, function () {
+                if (document.activeElement === that.rgb0x) {
+                    var val = that.rgb0x.value;
+                    if (!/^[\dA-F]{6}$/gi.test(val)) {
+                        return;
+                    }
+                    if (val == that.colorObj.rgb) {
+                        return;
+                    }
+                    var arr = [sunui.hex2Decimal(val.substr(0, 2)), sunui.hex2Decimal(val.substr(2, 2)), sunui.hex2Decimal(val.substr(4, 2))];
+                    that.colorObj = that._getColorPosition(that.colorObj, arr[0], arr[1], arr[2]);
+                    that._moveColorBar(that.colorObj);
+                    that._moveAreaPoint(that.colorObj);
+                    that._fillColor(that.items, that.colorObj);
+                    that._fillInput(that.colorObj);
+                }
+            });
+            that.webSafe.onclick = function () {
+                var r = that.colorObj.r, g = that.colorObj.g, b = that.colorObj.b;
+                that.colorObj = that._getColorPosition(that.colorObj, that._toSafeColor(r), that._toSafeColor(g), that._toSafeColor(b));
+                that._moveColorBar(that.colorObj);
+                that._moveAreaPoint(that.colorObj);
+                that._fillColor(that.items, that.colorObj);
+                that._fillInput(that.colorObj);
+            };
+            that._clickEvent(that.colorSure, function (down) {
+                if (down) {
+                    that.colorSure.style.lineHeight = '29px';
+                } else {
+                    that.colorSure.style.lineHeight = '27px';
+                    if (typeof that.json.onBeforeSure === 'function'
+                        && that.json.onBeforeSure(that, {rgb: that.colorObj.rgb, r: that.colorObj.r, g: that.colorObj.g, b: that.colorObj.b}) === false) {
+                        return;
+                    }
+                    that.colorObj.currentRgb = that.colorObj.rgb;
+                    that._setShowCurrentColor(that.colorObj);
+                    typeof that.json.onSure === 'function' && that.json.onSure(that, that.getColor());
+                }
+            });
+            that.showCurrent.onclick = function () {
+                that._setShowCurrentColor(that.colorObj);
+            };
+        };
+        ColorPanelNode.prototype._moveColorBar = function (colorObj) {
+            var that = this;
+            that.colorBar.style.top = colorObj.barY + 'px';
+        };
+        ColorPanelNode.prototype._moveAreaPoint = function (colorObj) {
+            var that = this;
+            that.colorAreaPoint.style.left = colorObj.areaX + 'px';
+            that.colorAreaPoint.style.top = colorObj.areaY + 'px';
+            if (colorObj.areaY < 100) {
+                that.colorAreaPoint.style.borderColor = '#000000';
+            } else {
+                that.colorAreaPoint.style.borderColor = '#FFFFFF';
+            }
+        };
+        ColorPanelNode.prototype._fillInput = function (colorObj) {
+            var that = this;
+            that.rgbR.value = colorObj.r;that.rgbG.value = colorObj.g;that.rgbB.value = colorObj.b;
+            that.showNew.style.backgroundColor = '#' + colorObj.rgb;
+            that.rgb0x.value = colorObj.rgb;
+        };
+        ColorPanelNode.prototype._fillShowCurrent = function (colorObj) {
+            var that = this;
+            that.showCurrent.innerHTML = '';
+            that.showCurrent.style.background = '#' + colorObj.currentRgb;
+        };
+        ColorPanelNode.prototype._setShowCurrentColor = function (colorObj) {
+            var that = this;
+            var currentRgb = colorObj.currentRgb;
+            if (currentRgb) {
+                that._fillShowCurrent(colorObj);
+                var arr = [sunui.hex2Decimal(currentRgb.substr(0, 2)), sunui.hex2Decimal(currentRgb.substr(2, 2)), sunui.hex2Decimal(currentRgb.substr(4, 2))];
+                colorObj = that._getColorPosition(colorObj, arr[0], arr[1], arr[2]);
+                that._moveColorBar(colorObj);
+                that._moveAreaPoint(colorObj);
+                that._fillColor(that.items, colorObj);
+                that._fillInput(colorObj);
+            } else {
+                that.showCurrent.style.background = '#F00000';
+                that.showCurrent.innerHTML = '<div class="empty-color empty-color-up"></div><div class="empty-color empty-color-down"></div>';
+            }
+        };
+        ColorPanelNode.prototype._fillColor = function (items, colorObj) {
+            var that = this;
+            var r = colorObj.barR, g = colorObj.barG, b = colorObj.barB;
+            var iterations = window.Math.floor(items.length / 8);
+            var leftover = items.length % 8;
+            var i = 0;
+            if (leftover > 0) {
+                do {
+                    that._processLinearGradient(i * that.multiple, items[i++], r, g, b);
+                } while (--leftover > 0);
+            }
+            do {
+                that._processLinearGradient(i * that.multiple, items[i++], r, g, b);
+                that._processLinearGradient(i * that.multiple, items[i++], r, g, b);
+                that._processLinearGradient(i * that.multiple, items[i++], r, g, b);
+                that._processLinearGradient(i * that.multiple, items[i++], r, g, b);
+                that._processLinearGradient(i * that.multiple, items[i++], r, g, b);
+                that._processLinearGradient(i * that.multiple, items[i++], r, g, b);
+                that._processLinearGradient(i * that.multiple, items[i++], r, g, b);
+                that._processLinearGradient(i * that.multiple, items[i++], r, g, b);
+            } while (--iterations > 0);
+        };
+        ColorPanelNode.prototype._processLinearGradient = function (i, dom, r, g, b) {
+            this._setLinearGradient(dom, 255 - i, 255 - i, 255 - i,
+                window.Math.round(r * (1  - i / 255)), window.Math.round(g * (1  - i / 255)), window.Math.round(b * (1  - i / 255)));
+        };
+        ColorPanelNode.prototype._setLinearGradient = function (dom, r1, g1, b1, r2, g2, b2) {
+            var that = this;
+            try {
+                dom.style.background = 'linear-gradient(to right, #FFFFFF,#000000)';
+                ColorPanelNode.prototype._setLinearGradient = function (dom, r1, g1, b1, r2, g2, b2) {
+                    var rgb1 = '#' + sunui.decimal2Hex(r1) + sunui.decimal2Hex(g1) + sunui.decimal2Hex(b1);
+                    var rgb2 = '#' + sunui.decimal2Hex(r2) + sunui.decimal2Hex(g2) + sunui.decimal2Hex(b2);
+                    dom.style.background = 'linear-gradient(to right, ' + rgb1 + ',' + rgb2 + ')';
+                    dom.style.filter = 'progid:DXImageTransform.Microsoft.Gradient(enabled=true,startColorStr=' + rgb1 + ',endColorStr=' + rgb2 + ',gradientType=1)';
+                }
+            } catch (e) {
+                ColorPanelNode.prototype._setLinearGradient = function (dom, r1, g1, b1, r2, g2, b2) {
+                    var rgb1 = '#' + sunui.decimal2Hex(r1) + sunui.decimal2Hex(g1) + sunui.decimal2Hex(b1);
+                    var rgb2 = '#' + sunui.decimal2Hex(r2) + sunui.decimal2Hex(g2) + sunui.decimal2Hex(b2);
+                    dom.style.filter = 'progid:DXImageTransform.Microsoft.Gradient(enabled=true,startColorStr=' + rgb1 + ',endColorStr=' + rgb2 + ',gradientType=1)';
+                }
+            }
+            return ColorPanelNode.prototype._setLinearGradient(dom, r1, g1, b1, r2, g2, b2);
+        };
+        ColorPanelNode.prototype._getBarRgb = function (colorObj, offsetY) {
+            colorObj.barY = offsetY;
+            if (offsetY >= 0 && offsetY < 42) {
+                colorObj.barR = 255;colorObj.barG = 0;colorObj.barB = window.Math.round(offsetY * 256 / 42);
+            } else if (offsetY >= 42 && offsetY < 85) {
+                colorObj.barR = window.Math.round(255 - (offsetY - 42) * 256 / 43);colorObj.barG = 0;colorObj.barB = 255;
+            } else if (offsetY >= 85 && offsetY < 128) {
+                colorObj.barR = 0;colorObj.barG = window.Math.round((offsetY - 85) * 256 / 43);colorObj.barB = 255;
+            } else if (offsetY >= 128 && offsetY < 171) {
+                colorObj.barR = 0;colorObj.barG = 255;colorObj.barB = window.Math.round(255 - (offsetY - 128) * 256 / 43);
+            } else if (offsetY >= 171 && offsetY < 214) {
+                colorObj.barR = window.Math.round((offsetY - 171) * 256 / 43);colorObj.barG = 255;colorObj.barB = 0;
+            } else if (offsetY >= 214 && offsetY < 256) {
+                colorObj.barR = 255;colorObj.barG = window.Math.round(255 - (offsetY - 214) * 256 / 42);colorObj.barB = 0;
+            } else if (offsetY >= 256) {
+                colorObj.barR = 255;colorObj.barG = 0;colorObj.barB = 0;
+            }
+            return colorObj;
+        };
+        ColorPanelNode.prototype._getColor = function (colorObj) {
+            var r = colorObj.barR, g = colorObj.barG, b = colorObj.barB, x = colorObj.areaX, y = colorObj.areaY;
+            colorObj.r = window.Math.round(x * (r * (1 - y / 255) - (255 - y)) / 255 + (255 - y));
+            colorObj.g = window.Math.round(x * (g * (1 - y / 255) - (255 - y)) / 255 + (255 - y));
+            colorObj.b = window.Math.round(x * (b * (1 - y / 255) - (255 - y)) / 255 + (255 - y));
+            colorObj.rgb = this._rgb2HexColor(colorObj);
+            if (r === 255 && g === 0 && b === 0) {
+                if (colorObj.barY !== 256) {
+                    colorObj.barY = 0;
+                }
+            } else if (r === 255 && g === 0) {
+                colorObj.barY = window.Math.round(b * 42 / 256);
+            } else if (g === 0 && b === 255) {
+                colorObj.barY = window.Math.round((255 - r) * 43 / 256 + 42);
+            } else if (r === 0 && b === 255) {
+                colorObj.barY = window.Math.round(g * 43 / 256 + 85);
+            } else if (r === 0 && g === 255) {
+                colorObj.barY = window.Math.round((255 - b) * 43 / 256 + 128);
+            } else if (g === 255 && b === 0) {
+                colorObj.barY = window.Math.round(r * 43 / 256 + 171);
+            } else if (r === 255 && b === 0) {
+                colorObj.barY = window.Math.round((255 - g) * 42 / 256 + 214);
+            }
+            return colorObj;
+        };
+        ColorPanelNode.prototype._getColorPosition = function (colorObj, r1, g1, b1) {
+            var r0 = colorObj.barR, g0 = colorObj.barG, b0 = colorObj.barB, x = 0, y = 0;
+            r1 = window.Number(r1); g1 = window.Number(g1); b1 = window.Number(b1);
+            if (r1 === g1 && r1 === b1) {
+                x = 0; y = 255 - r1;
+            } else if (r1 === g1 && r1 > b1) {
+                r0 = 255; g0 = 255; b0 = 0;
+                x = window.Math.round(255 - 255 * b1 / r1); y = 255 - r1;
+            } else if (r1 === g1 && r1 < b1) {
+                r0 = 0; g0 = 0; b0 = 255;
+                x = window.Math.round(255 - 255 * r1 / b1); y = 255 - b1;
+            } else if (r1 === b1 && r1 > g1) {
+                r0 = 255; g0 = 0; b0 = 255;
+                x = window.Math.round(255 - 255 * g1 / r1); y = 255 - r1;
+            } else if (r1 === b1 && r1 < g1) {
+                r0 = 0; g0 = 255; b0 = 0;
+                x = window.Math.round(255 - 255 * r1 / g1); y = 255 - g1;
+            } else if (g1 === b1 && g1 > r1) {
+                r0 = 0; g0 = 255; b0 = 255;
+                x = window.Math.round(255 - 255 * r1 / g1); y = 255 - g1;
+            } else if (g1 === b1 && g1 < r1) {
+                r0 = 255; g0 = 0; b0 = 0;
+                x = window.Math.round(255 - 255 * g1 / r1); y = 255 - r1;
+            } else if (r1 > g1 && r1 < b1) {
+                g0 = 0; b0 = 255;
+                x = window.Math.round(255 - 255 * g1 / b1); y = 255 - b1; r0 = window.Math.round(255 * (r1 - g1) / (b1 - g1));
+            } else if (r1 > b1 && r1 < g1) {
+                g0 = 255; b0 = 0;
+                x = window.Math.round(255 - 255 * b1 / g1); y = 255 - g1; r0 = window.Math.round(255 * (r1 - b1) / (g1 - b1));
+            } else if (g1 > r1 && g1 < b1) {
+                r0 = 0; b0 = 255;
+                x = window.Math.round(255 - 255 * r1 / b1); y = 255 - b1; g0 = window.Math.round(255 * (g1 - r1) / (b1 - r1));
+            } else if (g1 > b1 && g1 < r1) {
+                r0 = 255; b0 = 0;
+                x = window.Math.round(255 - 255 * b1 / r1); y = 255 - r1; g0 = window.Math.round(255 * (g1 - b1) / (r1 - b1));
+            } else if (b1 > r1 && b1 < g1) {
+                r0 = 0; g0 = 255;
+                x = window.Math.round(255 - 255 * r1 / g1); y = 255 - g1; b0 = window.Math.round(255 * (b1 - r1) / (g1 - r1));
+            } else if (b1 > g1 && b1 < r1) {
+                r0 = 255; g0 = 0;
+                x = window.Math.round(255 - 255 * g1 / r1); y = 255 - r1; b0 = window.Math.round(255 * (b1 - g1) / (r1 - g1));
+            }
+
+            colorObj.barR = r0; colorObj.barG = g0; colorObj.barB = b0; colorObj.areaX = x; colorObj.areaY = y;
+
+            return this._getColor(colorObj);
+        };
+        ColorPanelNode.prototype._rgb2HexColor = function (rgb) {
+            return sunui.decimal2Hex(rgb.r) + sunui.decimal2Hex(rgb.g) + sunui.decimal2Hex(rgb.b);
+        };
+        ColorPanelNode.prototype._toSafeColor = function (num) {
+            if (num < 26) {
+                num = 0;
+            } else if (num < 77) {
+                num = 51;
+            } else if (num < 128) {
+                num = 102;
+            } else if (num < 179) {
+                num = 153;
+            } else if (num < 230) {
+                num = 204;
+            } else {
+                num = 255;
+            }
+            return num;
+        };
+        ColorPanelNode.prototype._clickEvent = function (dom, func) {
+            var el = dom.setCapture ? dom : document;
+            dom.onmousedown = function (ev) {
+                dom.focus();
+                func(true);
+                el.onmouseup = function () {
+                    func(false);
+                    el.onmouseup = null; if(dom.releaseCapture) {dom.releaseCapture();}
+                };
+                if(dom.setCapture) {dom.setCapture();}
+                return false;
+            };
+        };
+        ColorPanelNode.prototype._dragEvent = function (dom, func) {
+            var disX = 0,disY = 0, clientX = 0, clientY = 0, dx = 0, dy = 0;
+            var el = dom.setCapture ? dom : document;
+            dom.onmousedown = function (ev) {
+                dom.focus();
+                var oEvent = ev || window.event;
+                disX = dx = oEvent.offsetX || oEvent.layerX || 0; disY = dy = oEvent.offsetY || oEvent.layerY || 0;
+                clientX = oEvent.clientX; clientY = oEvent.clientY;
+                var timeoutFunc = function () {
+                    func(dx, dy);
+                };
+                var dateDown = +new Date();
+                var timeout = null;
+                timeoutFunc();
+                el.onmousemove = function (ev) {
+                    var oEvent = ev || window.event;
+                    if(oEvent.stopPropagation) {
+                        oEvent.stopPropagation();
+                    } else {
+                        oEvent.cancelBubble = true;
+                    }
+                    dx = disX + oEvent.clientX - clientX;  dy = disY + oEvent.clientY - clientY;
+                    if (dx < 0) {dx = 0} else if (dx > dom.offsetWidth - 1) {dx = dom.offsetWidth - 1}
+                    if (dy < 0) {dy = 0} else if (dy > dom.offsetHeight - 1) {dy = dom.offsetHeight - 1}
+                    var dateMove = +new Date();
+                    if (dateMove - dateDown > 50) {
+                        dateDown = dateMove;
+                        timeout = window.setTimeout(timeoutFunc, 30);
+                    }
+                    return false;
+                };
+                el.onmouseup = function () {
+                    window.clearTimeout(timeout);
+                    timeoutFunc();
+                    el.onmousemove = null; el.onmouseup = null; if(dom.releaseCapture) {dom.releaseCapture();}
+                };
+                if(dom.setCapture) {dom.setCapture();}
+                return false;
+            };
+        };
+        ColorPanelNode.prototype._dragBarEvent = function (dom, func) {
+            var offsetTop = 0, clientY = 0, dy = 0;
+            var el = dom.setCapture ? dom : document,
+                parent = dom.offsetParent;
+            dom.onmousedown = function (ev) {
+                dom.focus();
+                var oEvent = ev || window.event;
+                offsetTop = dom.offsetTop + Math.round(dom.offsetHeight / 2);
+                clientY = oEvent.clientY;
+                var timeoutFunc = function () {
+                    func(dy);
+                };
+                timeoutFunc();
+                var timeout = null;
+                var clear = true;
+                el.onmousemove = function (ev) {
+                    var oEvent = ev || window.event;
+                    if(oEvent.stopPropagation) {
+                        oEvent.stopPropagation();
+                    } else {
+                        oEvent.cancelBubble = true;
+                    }
+                    dy = offsetTop + oEvent.clientY - clientY;
+                    if (dy < 0) {dy = 0} else if (dy > parent.offsetHeight - 1) {dy = parent.offsetHeight - 1}
+                    dom.style.top = dy + 'px';
+                    if (clear) {
+                        clear = !clear;
+                        window.clearTimeout(timeout);
+                    }
+                    timeout = window.setTimeout(timeoutFunc, 40);
+                    return false;
+                };
+                el.onmouseup = function () {
+                    window.clearTimeout(timeout);
+                    timeoutFunc();
+                    el.onmousemove = null; el.onmouseup = null; if(dom.releaseCapture) {dom.releaseCapture();}
+                };
+                if(dom.setCapture) {dom.setCapture();}
+                return false;
+            };
+        };
+        ColorPanelNode.prototype._setColor = function (color) {
+            var that = this;
+            var currentRgb = color ? color.toString() : undefined;
+            var rgbRegExp = /^rgb\( *(\d+), *(\d+), *(\d+) *\)$/ig, rgb0xRegExp = /^#([0-9A-F]{2})([0-9A-F]{2})([0-9A-F]{2})$/ig;
+            var execArr = null;
+            if (currentRgb) {
+                if (currentRgb.indexOf('rgb') === 0) {
+                    execArr = rgbRegExp.exec(currentRgb);
+                    if (execArr && execArr.length === 4
+                        && execArr[1] >= 0 && execArr[1] <= 255
+                        && execArr[1] >= 0 && execArr[2] <= 255
+                        && execArr[1] >= 0 && execArr[3] <= 255) {
+                        currentRgb = sunui.decimal2Hex(execArr[1]) + sunui.decimal2Hex(execArr[2]) + sunui.decimal2Hex(execArr[3]);
+                    } else {
+                        currentRgb = undefined;
+                    }
+                } else {
+                    execArr = rgb0xRegExp.exec(currentRgb);
+                    if (execArr && execArr.length === 4) {
+                        currentRgb = execArr[1].toUpperCase() + execArr[2].toUpperCase() + execArr[3].toUpperCase();
+                    } else {
+                        currentRgb = undefined;
+                    }
+                }
+
+            }
+            if (!currentRgb) {
+                currentRgb = undefined;
+            }
+            that.colorObj.currentRgb =  currentRgb;
+        };
+        ColorPanelNode.prototype.setColor = function (color) {
+            var that = this;
+            that._setColor(color);
+            that._setShowCurrentColor(that.colorObj);
+            that._fillColor(that.items, that.colorObj);
+            that.colorObj = that._getColor(that.colorObj);
+            that._fillInput(that.colorObj);
+            return that;
+        };
+        ColorPanelNode.prototype.getColor = function () {
+            var colorObj = this.colorObj;
+            return {
+                rbg: colorObj.currentRgb,
+                r: colorObj.currentRgb ? colorObj.r : undefined,
+                g: colorObj.currentRgb ? colorObj.g : undefined,
+                b: colorObj.currentRgb ? colorObj.b : undefined
+            }
         };
     })();
 
