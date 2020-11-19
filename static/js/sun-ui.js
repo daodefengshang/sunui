@@ -258,6 +258,12 @@
         }
     }
 
+    function pauseEvent(e) {
+        e.stopPropagation ? e.stopPropagation() : e.cancelBubble = true;
+        e.preventDefault ? e.preventDefault() : e.returnValue = false;
+        return false;
+    }
+
     (function(){
         if (!lteIE8 || sunui.vml) {return;}
         sunui.vml = function(name){
@@ -676,13 +682,16 @@
                 doel = el.setCapture ? el : document,
                 dialogWidth = undefined, dialogHeight = undefined;
             el.onmousedown = function (ev) {
-                var oEvent = ev || event;
+                var oEvent = ev || window.event;
+                pauseEvent(oEvent);
                 dialogWidth = dialogWidth || container.offsetWidth;
                 dialogHeight = dialogHeight || container.offsetHeight;
                 disX = oEvent.clientX - container.offsetLeft;
                 disY = oEvent.clientY - container.offsetTop;
                 doel.onmousemove = function (ev) {
-                    var oEvent = ev || event, l = oEvent.clientX - disX, t = oEvent.clientY - disY;
+                    var oEvent = ev || window.event;
+                    pauseEvent(oEvent);
+                    var l = oEvent.clientX - disX, t = oEvent.clientY - disY;
                     if (l < 1) {l = 1;} else if (l > dialogModal.clientWidth - container.offsetWidth - 1) {l = dialogModal.clientWidth - container.offsetWidth - 1;if (l < 1) {l = 1;}}
                     if (t < 1) {t = 1;} else if (t > dialogModal.clientHeight - container.offsetHeight - 1) {t = dialogModal.clientHeight - container.offsetHeight - 1;if (t < 1) {t = 1;}}
                     container.style.left = l + dialogWidth / 2 + 'px';
@@ -1700,6 +1709,8 @@
         ColorPanelNode.prototype._clickEvent = function (dom, func) {
             var el = dom.setCapture ? dom : document;
             dom.onmousedown = function (ev) {
+                var oEvent = ev || window.event;
+                pauseEvent(oEvent);
                 dom.focus();
                 func(true);
                 el.onmouseup = function () {
@@ -1714,8 +1725,9 @@
             var disX = 0,disY = 0, clientX = 0, clientY = 0, dx = 0, dy = 0;
             var el = dom.setCapture ? dom : document;
             dom.onmousedown = function (ev) {
-                dom.focus();
                 var oEvent = ev || window.event;
+                pauseEvent(oEvent);
+                dom.focus();
                 disX = dx = oEvent.offsetX || oEvent.layerX || 0; disY = dy = oEvent.offsetY || oEvent.layerY || 0;
                 clientX = oEvent.clientX; clientY = oEvent.clientY;
                 var timeoutFunc = function () {
@@ -1726,11 +1738,7 @@
                 timeoutFunc();
                 el.onmousemove = function (ev) {
                     var oEvent = ev || window.event;
-                    if(oEvent.stopPropagation) {
-                        oEvent.stopPropagation();
-                    } else {
-                        oEvent.cancelBubble = true;
-                    }
+                    pauseEvent(oEvent);
                     dx = disX + oEvent.clientX - clientX;  dy = disY + oEvent.clientY - clientY;
                     if (dx < 0) {dx = 0} else if (dx > dom.offsetWidth - 1) {dx = dom.offsetWidth - 1}
                     if (dy < 0) {dy = 0} else if (dy > dom.offsetHeight - 1) {dy = dom.offsetHeight - 1}
@@ -1755,8 +1763,9 @@
             var el = dom.setCapture ? dom : document,
                 parent = dom.offsetParent;
             dom.onmousedown = function (ev) {
-                dom.focus();
                 var oEvent = ev || window.event;
+                pauseEvent(oEvent);
+                dom.focus();
                 offsetTop = dom.offsetTop + Math.round(dom.offsetHeight / 2);
                 clientY = oEvent.clientY;
                 var timeoutFunc = function () {
@@ -1767,11 +1776,7 @@
                 var clear = true;
                 el.onmousemove = function (ev) {
                     var oEvent = ev || window.event;
-                    if(oEvent.stopPropagation) {
-                        oEvent.stopPropagation();
-                    } else {
-                        oEvent.cancelBubble = true;
-                    }
+                    pauseEvent(oEvent);
                     dy = offsetTop + oEvent.clientY - clientY;
                     if (dy < 0) {dy = 0} else if (dy > parent.offsetHeight - 1) {dy = parent.offsetHeight - 1}
                     dom.style.top = dy + 'px';
