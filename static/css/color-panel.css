@@ -28,6 +28,7 @@
     height: 256px;
     background-color: #00FF00;
     overflow: hidden;
+    z-index: 0;
 }
 .sunui-color-container .sunui-color-area div {
     height: 2px;
@@ -47,10 +48,6 @@
 .sunui-color-container .sunui-color-area .sunui-color-area-point {
     width: 12px;
     height: 12px;
-    *width: 10px;
-    *height: 10px;
-    _width: 12px;
-    _height: 12px;
     position: absolute;
     display: block;
     left: 255px;
@@ -64,6 +61,17 @@
     background: none;
     font-size: 0;
     overflow: hidden;
+    z-index: 0;
+}
+.sunui-color-container .sunui-color-area .sunui-color-area-point.sunui-color-area-point-ie8 {
+    width: 14px;
+    margin-left: -7px;
+    border: 0 none;
+    font-family: "Simsun", "宋体", serif;
+    line-height: 12px;
+    text-align: center;
+    color: #000000;
+    font-size: 14px;
 }
 .sunui-color-container .sunui-color-index,
 .sunui-color-container .sunui-color-index .sunui-color-index-layer {

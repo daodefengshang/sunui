@@ -1258,7 +1258,12 @@
                 that.colorArea.className = 'sunui-color-area';
 
                 that.colorAreaPoint = span.cloneNode();
-                that.colorAreaPoint.className = 'sunui-color-area-point';
+                if (lteIE8) {
+                    that.colorAreaPoint.className = 'sunui-color-area-point sunui-color-area-point-ie8';
+                    that.colorAreaPoint.innerHTML = '〇';
+                } else {
+                    that.colorAreaPoint.className = 'sunui-color-area-point';
+                }
                 that.colorArea.appendChild(that.colorAreaPoint);
 
                 that.colorAreaLayer = span.cloneNode();
@@ -1519,9 +1524,18 @@
             that.colorAreaPoint.style.left = colorObj.areaX + 'px';
             that.colorAreaPoint.style.top = colorObj.areaY + 'px';
             if (colorObj.areaY < 100) {
-                that.colorAreaPoint.style.borderColor = '#000000';
+                if (lteIE8) {
+                    that.colorAreaPoint.style.color = '#000000';
+                } else {
+                    that.colorAreaPoint.style.borderColor = '#000000';
+                }
             } else {
-                that.colorAreaPoint.style.borderColor = '#FFFFFF';
+                if (lteIE8) {
+                    that.colorAreaPoint.style.color = '#FFFFFF';
+                } else {
+                    that.colorAreaPoint.style.borderColor = '#FFFFFF';
+                }
+
             }
         };
         ColorPanelNode.prototype._fillInput = function (colorObj) {
