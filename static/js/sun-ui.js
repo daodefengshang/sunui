@@ -1535,7 +1535,6 @@
                 } else {
                     that.colorAreaPoint.style.borderColor = '#FFFFFF';
                 }
-
             }
         };
         ColorPanelNode.prototype._fillInput = function (colorObj) {

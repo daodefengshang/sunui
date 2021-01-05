@@ -237,8 +237,8 @@
     border-bottom: 16px solid transparent;
     _border-top: 16px solid #FFFFFF;
     _border-right: 35px solid #FFFFFF;
-    _border-left: 35px solid transparent;
-    _border-bottom: 16px solid transparent;
+    _border-left: 35px dashed transparent;
+    _border-bottom: 16px dashed transparent;
 }
 .sunui-color-container .sunui-color-rgb-container .sunui-color-show-container .sunui-color-show .empty-color-down {
     position: absolute;
@@ -248,8 +248,8 @@
     border-right: 34px solid transparent;
     border-left: 34px solid #FFFFFF;
     border-bottom: 16px solid #FFFFFF;
-    _border-top: 16px solid transparent;
-    _border-right: 35px solid transparent;
+    _border-top: 16px dashed transparent;
+    _border-right: 35px dashed transparent;
     _border-left: 35px solid #FFFFFF;
     _border-bottom: 16px solid #FFFFFF;
 }
